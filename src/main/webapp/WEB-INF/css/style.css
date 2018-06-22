@@ -1,0 +1,33 @@
+img {
+	border: 0;
+}
+
+body {
+	background: #83c783;
+	background: -moz-radial-gradient(center, ellipse cover, #83c783 0%, #008a00 0%,
+		#005700 43%, #002400 100%);
+	background: -webkit-radial-gradient(center, ellipse cover, #83c783 0%, #008a00 0%,
+		#005700 43%, #002400 100%);
+	background: radial-gradient(ellipse at center, #83c783 0%, #008a00 0%, #005700 43%,
+		#002400 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#83c783',
+		endColorstr='#002400', GradientType=1);
+	height: 650px;
+}
+
+div.hand {
+	margin: auto;
+	width: 81%;
+	padding: 10px;
+}
+
+div#piles {
+	margin: auto;
+	width: 17%;
+	padding: 10px;
+}
+
+div#hint {
+	text-align: center;
+	font-size: 200%;
+}
