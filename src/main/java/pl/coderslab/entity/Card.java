@@ -1,5 +1,6 @@
 package pl.coderslab.entity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -16,7 +17,7 @@ public class Card {
 	private int value;
 	private String color;
 	private String visibleValue;
-	@ManyToOne
+	@ManyToOne(cascade = { CascadeType.MERGE })
 	private CardHolder cardHolder;
 
 	@Override

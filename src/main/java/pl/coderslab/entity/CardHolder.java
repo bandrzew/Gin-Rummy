@@ -3,6 +3,7 @@ package pl.coderslab.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -15,11 +16,24 @@ import javax.persistence.Table;
 public class CardHolder {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	protected Long id;
-	@OneToMany
-	protected List<Card> cards = new ArrayList<>();
+	private Long id;
+	private String name;
+	@OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "cardHolder")
+	private List<Card> cards = new ArrayList<>();
 
-	public List<Card> getHand() {
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public List<Card> getCards() {
 		return cards;
 	}
 
