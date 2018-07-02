@@ -18,7 +18,7 @@ public class CardHolder {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String name;
-	@OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "cardHolder")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "cardHolder")
 	private List<Card> cards = new ArrayList<>();
 
 	public String getName() {
@@ -31,6 +31,10 @@ public class CardHolder {
 
 	public Long getId() {
 		return id;
+	}
+
+	public void setCards(List<Card> cards) {
+		this.cards = cards;
 	}
 
 	public List<Card> getCards() {
