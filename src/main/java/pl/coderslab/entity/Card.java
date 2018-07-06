@@ -19,7 +19,7 @@ public class Card {
 	private String color;
 	private String visibleValue;
 	@ManyToOne(cascade = { CascadeType.MERGE })
-	@JoinColumn(name = "cardHolder_ID", referencedColumnName = "ID")
+	@JoinColumn(name = "cardHolder_ID", referencedColumnName = "id")
 	private CardHolder cardHolder;
 
 	@Override
