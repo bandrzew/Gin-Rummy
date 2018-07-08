@@ -1,14 +1,16 @@
 package pl.coderslab.controllers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import pl.coderslab.entity.Card;
@@ -24,57 +26,100 @@ public class DeckController {
 	private CardHolderRepository cardHolderRepository;
 
 	@GetMapping("/test")
-	@ResponseBody
 	public String test() {
-		CardHolder player = cardHolderRepository.findOne(1l);
-		List<Card> dealt = cardRepository.findByCardHolder(player);
+		return "main";
+	}
 
-		return dealt.get(0).getCardHolder().toString() + "<br>" + cardHolderRepository.findOne(2l).toString();
+	@GetMapping("/discard/{card}")
+	@ResponseBody
+	public String discard(@PathVariable String card) {
+		String visibleValue;
+		String color;
+		if (card.length() == 2) {
+
+		}
+		return cardRepository.toString();
+	}
+
+	@GetMapping("/stock/{card}")
+	@ResponseBody
+	public String stock(@PathVariable String card) {
+		return cardRepository.toString();
 	}
 
 	@GetMapping("/deal")
 	@Transactional
-	public String deal() {
-		List<Card> shuffled = cardRepository.findAll();
-		Collections.shuffle(shuffled);
-		// shuffled = shuffled.subList(0, 10);
-		// Hibernate.initialize(player.getCards());
+	public String dealCards() {
+		List<Card> cards = cardRepository.findAll();
 
-		for (Card card : shuffled.subList(0, 10)) {
+		for (Card card : cards.subList(0, 10)) {
 			card.setCardHolder(cardHolderRepository.findByName("player"));
 		}
 
-		for (Card card : shuffled.subList(10, 20)) {
-			card.setCardHolder(cardHolderRepository.findByName("BOT"));
+		for (Card card : cards.subList(10, 20)) {
+			card.setCardHolder(cardHolderRepository.findByName("bot"));
 		}
+
+		cards.get(20).setCardHolder(cardHolderRepository.findByName("discardPile"));
 
 		return "redirect:/test";
 	}
 
-	@GetMapping("/init")
+	@GetMapping("/cards")
+	@Transactional
 	public String createCards() {
 		String[] colors = { "D", "C", "H", "S" };// { "diams", "clubs", "hearts", "spades" }
+		List<Card> cards = new ArrayList<>();
 		for (String color : colors) {
 			for (int i = 1; i < 14; i++) {
 				Card card = new Card();
 				card.setValue(i);
 				card.setColor(color);
-				cardRepository.save(card);
+				card.setCardHolder(cardHolderRepository.findByName("stockPile"));
+				cards.add(card);
 			}
 		}
-		return "redirect:/createHolders";
+		Collections.shuffle(cards);
+		cardRepository.save(cards);
+		return "redirect:/deal";
 	}
 
-	@GetMapping("/createHolders")
+	@GetMapping("/init")
 	public String createHolders() {
+		CardHolder stockPile = new CardHolder();
+		stockPile.setName("stockPile");
+		cardHolderRepository.save(stockPile);
 
 		CardHolder player = new CardHolder();
 		player.setName("player");
 		cardHolderRepository.save(player);
+
 		CardHolder bot = new CardHolder();
 		bot.setName("bot");
 		cardHolderRepository.save(bot);
 
-		return "redirect:/deal";
+		CardHolder discardPile = new CardHolder();
+		discardPile.setName("discardPile");
+		cardHolderRepository.save(discardPile);
+
+		return "redirect:/cards";
 	}
+
+	@ModelAttribute("hand")
+	public List<Card> getPlayerCards() {
+		if (cardHolderRepository.count() == 0) {
+			return null;
+		}
+		return cardHolderRepository.findByName("player").getCards();
+	}
+
+	@ModelAttribute("discard")
+	public Card getDiscardPile() {
+		List<Card> discardPile = cardRepository.findByCardHolderName("discardPile");
+		if (discardPile.size() == 0) {
+			return null;
+		}
+		return discardPile.get(discardPile.size() - 1);
+	}
+
 }

@@ -11,7 +11,7 @@
 <script><%@include file="/WEB-INF/js/app.js"%></script>
 </head>
 <body>
-	<div id="ai" class="hand">
+	<div id="bot" class="hand">
 		<c:forEach var="i" begin="1" end="10">
 			<img src="<c:url value='/resources/cards/blackback.png'/>"style="height:140px">
 		</c:forEach>

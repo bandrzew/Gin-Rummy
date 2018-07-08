@@ -4,7 +4,7 @@ $(function() {
 	function setHint() {
 		var hint = 'wybierz karte do odrzucenia lub '.concat(
 				'<button onclick="location.href=',
-				"'http://localhost:8080/Poker/knock'",
+				"'http://localhost:8080/Gin-Rummy'",
 				'"type="button">zastukaj</button>');
 		$('#hint').html(hint);
 	}
@@ -16,7 +16,7 @@ $(function() {
 				playerHand.each(function(index, element) {
 					var id = element.getAttribute('id');
 					element.setAttribute('href',
-							'http://localhost:8080/Poker/discard/' + id);
+							'http://localhost:8080/Gin-Rummy/discard/' + id);
 				})
 			});
 
@@ -27,7 +27,7 @@ $(function() {
 				playerHand.each(function(index, element) {
 					var id = element.getAttribute('id');
 					element.setAttribute('href',
-							'http://localhost:8080/Poker/stock/' + id);
+							'http://localhost:8080/Gin-Rummy/stock/' + id);
 				})
 			});
 });

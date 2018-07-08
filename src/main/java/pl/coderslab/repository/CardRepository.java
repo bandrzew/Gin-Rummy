@@ -9,4 +9,8 @@ import pl.coderslab.entity.CardHolder;
 
 public interface CardRepository extends JpaRepository<Card, Long> {
 	List<Card> findByCardHolder(CardHolder cardHolder);
+
+	List<Card> findByCardHolderName(String cardHolderName);
+
+	Card findByVisibleValueAndColor(String visibleValue, String color);
 }
