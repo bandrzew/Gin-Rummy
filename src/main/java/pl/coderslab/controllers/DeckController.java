@@ -24,27 +24,43 @@ public class DeckController {
 	private CardRepository cardRepository;
 	@Autowired
 	private CardHolderRepository cardHolderRepository;
+	private List<Card> discardPile = new ArrayList<>();
 
-	@GetMapping("/test")
-	public String test() {
+	@GetMapping("/main")
+	public String main() {
 		return "main";
 	}
 
 	@GetMapping("/discard/{card}")
-	@ResponseBody
+	@Transactional
 	public String discard(@PathVariable String card) {
-		String visibleValue;
-		String color;
-		if (card.length() == 2) {
+		String visibleValue = card.substring(0, card.length() - 1);
+		String color = card.substring(card.length() - 1);
 
-		}
-		return cardRepository.toString();
+		Card picked = this.discardPile.remove(this.discardPile.size() - 1);
+		Card passed = cardRepository.findByVisibleValueAndColor(visibleValue, color);
+
+		cardRepository.findOne(picked.getId()).setCardHolder(cardHolderRepository.findByName("player"));
+		passed.setCardHolder(cardHolderRepository.findByName("discardPile"));
+		this.discardPile.add(passed);
+
+		return "redirect:/main";
 	}
 
 	@GetMapping("/stock/{card}")
-	@ResponseBody
+	@Transactional
 	public String stock(@PathVariable String card) {
-		return cardRepository.toString();
+		String visibleValue = card.substring(0, card.length() - 1);
+		String color = card.substring(card.length() - 1);
+
+		Card picked = cardRepository.findFirstByCardHolderName("stockPile");
+		Card passed = cardRepository.findByVisibleValueAndColor(visibleValue, color);
+
+		picked.setCardHolder(cardHolderRepository.findByName("player"));
+		passed.setCardHolder(cardHolderRepository.findByName("discardPile"));
+		this.discardPile.add(passed);
+
+		return "redirect:/main";
 	}
 
 	@GetMapping("/deal")
@@ -61,8 +77,9 @@ public class DeckController {
 		}
 
 		cards.get(20).setCardHolder(cardHolderRepository.findByName("discardPile"));
+		discardPile.add(cards.get(20));
 
-		return "redirect:/test";
+		return "redirect:/main";
 	}
 
 	@GetMapping("/cards")
@@ -70,6 +87,7 @@ public class DeckController {
 	public String createCards() {
 		String[] colors = { "D", "C", "H", "S" };// { "diams", "clubs", "hearts", "spades" }
 		List<Card> cards = new ArrayList<>();
+
 		for (String color : colors) {
 			for (int i = 1; i < 14; i++) {
 				Card card = new Card();
@@ -79,8 +97,10 @@ public class DeckController {
 				cards.add(card);
 			}
 		}
+
 		Collections.shuffle(cards);
 		cardRepository.save(cards);
+
 		return "redirect:/deal";
 	}
 
@@ -115,11 +135,10 @@ public class DeckController {
 
 	@ModelAttribute("discard")
 	public Card getDiscardPile() {
-		List<Card> discardPile = cardRepository.findByCardHolderName("discardPile");
-		if (discardPile.size() == 0) {
+		if (this.discardPile.size() == 0) {
 			return null;
 		}
-		return discardPile.get(discardPile.size() - 1);
+		return this.discardPile.get(this.discardPile.size() - 1);
 	}
 
 }

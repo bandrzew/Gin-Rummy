@@ -21,26 +21,35 @@ public class Card {
 	@ManyToOne(cascade = { CascadeType.MERGE })
 	@JoinColumn(name = "cardHolder_ID", referencedColumnName = "id")
 	private CardHolder cardHolder;
+	private boolean isInMeld;
 
 	@Override
 	public String toString() {
 		return String.format("%s%s", visibleValue, color);
 	}
-
-	public boolean equalsByValue(Card card) {
-		return this.value == card.getValue();
-	}
-
-	public boolean isNext(Card card) {
-		return (this.equalsByColor(card) && this.value + 1 == card.getValue());
-	}
-
-	public boolean equalsByColor(Card card) {
-		return this.color == card.getColor();
-	}
+//
+//	public boolean equalsByValue(Card card) {
+//		return this.value == card.getValue();
+//	}
+//
+//	public boolean isNext(Card card) {
+//		return (this.equalsByColor(card) && this.value + 1 == card.getValue());
+//	}
+//
+//	public boolean equalsByColor(Card card) {
+//		return this.color == card.getColor();
+//	}
 
 	public String getVisibleValue() {
 		return visibleValue;
+	}
+
+	public boolean isInMeld() {
+		return isInMeld;
+	}
+
+	public void setInMeld(boolean isInMeld) {
+		this.isInMeld = isInMeld;
 	}
 
 	public void setVisibleValue(String visibleValue) {

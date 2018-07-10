@@ -12,5 +12,7 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
 	List<Card> findByCardHolderName(String cardHolderName);
 
+	Card findFirstByCardHolderName(String cardHolderName);
+
 	Card findByVisibleValueAndColor(String visibleValue, String color);
 }

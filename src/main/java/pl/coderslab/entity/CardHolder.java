@@ -23,6 +23,16 @@ public class CardHolder {
 	@OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "cardHolder")
 	private List<Card> cards = new ArrayList<>();
 
+	public int countDeadwoodPoints() {
+		int deadwoodPoints = 0;
+		for (Card card : cards) {
+			if (!card.isInMeld()) {
+				deadwoodPoints += card.getValue();
+			}
+		}
+		return deadwoodPoints;
+	}
+
 	public String getName() {
 		return name;
 	}
