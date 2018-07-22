@@ -7,6 +7,7 @@ import java.util.Map;
 import pl.coderslab.entity.Card;
 
 public class Runs implements Melds {
+	@Override
 	public void find(List<Card> cards) {
 		Map<Integer, Integer> results = new HashMap<>();// <runStart card index, run length>
 		int runStart = -1, shift = 1;
