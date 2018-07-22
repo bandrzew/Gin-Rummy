@@ -16,32 +16,29 @@ public class Card {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private int value;
-	private String color;
 	private String visibleValue;
+	private int points;
+	private String color;
 	@ManyToOne(cascade = { CascadeType.MERGE })
 	@JoinColumn(name = "cardHolder_ID", referencedColumnName = "id")
 	private CardHolder cardHolder;
-	private boolean isInMeld;
+	private boolean isInMeld = false;
 
 	@Override
 	public String toString() {
 		return String.format("%s%s", visibleValue, color);
 	}
-//
-//	public boolean equalsByValue(Card card) {
-//		return this.value == card.getValue();
-//	}
-//
-//	public boolean isNext(Card card) {
-//		return (this.equalsByColor(card) && this.value + 1 == card.getValue());
-//	}
-//
-//	public boolean equalsByColor(Card card) {
-//		return this.color == card.getColor();
-//	}
 
 	public String getVisibleValue() {
 		return visibleValue;
+	}
+
+	public int getPoints() {
+		return points;
+	}
+
+	public void setPoints(int points) {
+		this.points = points;
 	}
 
 	public boolean isInMeld() {
@@ -69,25 +66,27 @@ public class Card {
 	}
 
 	public void setValue(int value) {
+		this.value = value;
+
 		switch (value) {
 		case (1):
-			this.value = value;
+			this.setPoints(value);
 			this.setVisibleValue("A");
 			break;
 		case (11):
-			this.value = 10;
+			this.setPoints(10);
 			this.setVisibleValue("J");
 			break;
 		case (12):
-			this.value = 10;
+			this.setPoints(10);
 			this.setVisibleValue("Q");
 			break;
 		case (13):
-			this.value = 10;
+			this.setPoints(10);
 			this.setVisibleValue("K");
 			break;
 		default:
-			this.value = value;
+			this.setPoints(value);
 			this.setVisibleValue(Integer.toString(value));
 		}
 	}

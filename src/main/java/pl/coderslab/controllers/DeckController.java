@@ -3,10 +3,12 @@ package pl.coderslab.controllers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import pl.coderslab.entity.Card;
 import pl.coderslab.entity.CardHolder;
+import pl.coderslab.melds.Runs;
 import pl.coderslab.repository.CardHolderRepository;
 import pl.coderslab.repository.CardRepository;
 
@@ -24,11 +27,46 @@ public class DeckController {
 	private CardRepository cardRepository;
 	@Autowired
 	private CardHolderRepository cardHolderRepository;
+
 	private List<Card> discardPile = new ArrayList<>();
+
+	private String[] colors = { "D", "C", "H", "S" };// { "diams", "clubs", "hearts", "spades" }
 
 	@GetMapping("/main")
 	public String main() {
 		return "main";
+	}
+
+	@GetMapping("/bot")
+	@Transactional
+	@ResponseBody
+	public String botRandomMove() {
+		Random rand = new Random();
+		int n = rand.nextInt(10000);
+		Card picked = null;
+
+		if (n % 2 == 0) {
+			picked = this.discardPile.remove(this.discardPile.size() - 1);
+		} else {
+			picked = cardRepository.findFirstByCardHolderName("stockPile");
+		}
+
+		Card passed = cardRepository.findByNameAndSort("bot", new Sort("points")).get(n % 10);
+		picked.setCardHolder(cardHolderRepository.findByName("bot"));
+		passed.setCardHolder(cardHolderRepository.findByName("discardPile"));
+		this.discardPile.add(passed);
+
+		return "redirect:/main";
+	}
+
+	@GetMapping("/runs")
+	@ResponseBody
+	public String findRuns() {
+		for (String color : this.colors) {
+			Runs runs = new Runs();
+			runs.find(cardRepository.findByNameAndColorWithSort("player", color, new Sort("value")));
+		}
+		return "redirect:/main";
 	}
 
 	@GetMapping("/discard/{card}")
@@ -44,7 +82,7 @@ public class DeckController {
 		passed.setCardHolder(cardHolderRepository.findByName("discardPile"));
 		this.discardPile.add(passed);
 
-		return "redirect:/main";
+		return "redirect:/bot";
 	}
 
 	@GetMapping("/stock/{card}")
@@ -60,7 +98,7 @@ public class DeckController {
 		passed.setCardHolder(cardHolderRepository.findByName("discardPile"));
 		this.discardPile.add(passed);
 
-		return "redirect:/main";
+		return "redirect:/bot";
 	}
 
 	@GetMapping("/deal")
@@ -82,13 +120,18 @@ public class DeckController {
 		return "redirect:/main";
 	}
 
+	@GetMapping("/reset")
+	public String reset() {
+		cardRepository.deleteAll();
+		return "redirect:/cards";
+	}
+
 	@GetMapping("/cards")
 	@Transactional
 	public String createCards() {
-		String[] colors = { "D", "C", "H", "S" };// { "diams", "clubs", "hearts", "spades" }
 		List<Card> cards = new ArrayList<>();
 
-		for (String color : colors) {
+		for (String color : this.colors) {
 			for (int i = 1; i < 14; i++) {
 				Card card = new Card();
 				card.setValue(i);
@@ -127,14 +170,14 @@ public class DeckController {
 
 	@ModelAttribute("hand")
 	public List<Card> getPlayerCards() {
-		if (cardHolderRepository.count() == 0) {
+		if (this.discardPile.size() == 0) {
 			return null;
 		}
-		return cardHolderRepository.findByName("player").getCards();
+		return cardRepository.findByNameAndSort("player", new Sort("value"));
 	}
 
 	@ModelAttribute("discard")
-	public Card getDiscardPile() {
+	public Card getTopDiscard() {
 		if (this.discardPile.size() == 0) {
 			return null;
 		}
