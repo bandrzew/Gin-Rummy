@@ -22,7 +22,7 @@ public class Card {
 	@ManyToOne(cascade = { CascadeType.MERGE })
 	@JoinColumn(name = "cardHolder_ID", referencedColumnName = "id")
 	private CardHolder cardHolder;
-	private boolean isInMeld = false;
+	private boolean isInMeld;
 
 	@Override
 	public String toString() {

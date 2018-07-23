@@ -2,7 +2,7 @@
 
 ![screen](https://raw.githubusercontent.com/bandrzew/Gin-Rummy/master/src/main/webapp/resources/Screenshot%20from%202018-06-26%2007-48-08.png)
 
-Work in progress!
+Work in progress! Bot's decisions are for now random.
 
 ###Rules
 

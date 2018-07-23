@@ -2,10 +2,12 @@ $(function() {
 	var playerHand = $('.hand').find('a');
 
 	function setHint() {
-		var hint = 'wybierz karte do odrzucenia lub '.concat(
-				'<button onclick="location.href=',
-				"'http://localhost:8080/Gin-Rummy'",
-				'"type="button">zastukaj</button>');
+		var hint = 'wybierz karte do odrzucenia';/*
+													 * lub '.concat( '<button
+													 * onclick="location.href=',
+													 * "'http://localhost:8080/Gin-Rummy'",
+													 * '"type="button">zastukaj</button>)'
+													 */
 		$('#hint').html(hint);
 	}
 

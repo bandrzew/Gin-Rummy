@@ -14,6 +14,9 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
 	List<Card> findByCardHolderName(String cardHolderName);
 
+	@Query("select c from Card c where c.cardHolder.name = ?1 and c.value = ?2 and c.isInMeld = false")
+	List<Card> findByValueToSet(String cardHolderName, int value);
+
 	@Query("select c from Card c where c.cardHolder.name = ?1")
 	List<Card> findByNameAndSort(String cardHolderName, Sort sort);
 
@@ -22,7 +25,7 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
 	Card findFirstByCardHolderName(String cardHolderName);
 
-	Card findByValueAndColor(int Value, String color);
+	Card findByValueAndColor(int value, String color);
 
 	Card findByVisibleValueAndColor(String visibleValue, String color);
 }

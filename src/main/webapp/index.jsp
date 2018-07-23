@@ -1,5 +1,5 @@
 <html>
 <body>
-<h2>Hello World!</h2>
+	<h2>I want to play a game...</h2>
 </body>
 </html>

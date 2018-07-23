@@ -8,8 +8,11 @@ public class Sets implements Melds {
 
 	@Override
 	public void find(List<Card> cards) {
-		// TODO Auto-generated method stub
-
+		if (cards != null && cards.size() > 2) {
+			for (Card card : cards) {
+				card.setInMeld(true);
+			}
+		}
 	}
 
 }
