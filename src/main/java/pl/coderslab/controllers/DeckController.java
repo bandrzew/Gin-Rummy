@@ -1,9 +1,10 @@
 package pl.coderslab.controllers;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
@@ -13,10 +14,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import pl.coderslab.entity.Card;
 import pl.coderslab.entity.CardHolder;
-import pl.coderslab.melds.*;
+import pl.coderslab.melds.Melds;
+import pl.coderslab.melds.Runs;
+import pl.coderslab.melds.Sets;
 import pl.coderslab.repository.CardHolderRepository;
 import pl.coderslab.repository.CardRepository;
 
@@ -37,7 +42,7 @@ public class DeckController {
 				&& cardHolderRepository.findByName("player").countDeadwoodPoints() != 0) {
 			return "main";
 		} else {
-			return "end"; // TODO redirect to reset after it's fixed
+			return "redirect/deal";
 		}
 	}
 
@@ -102,49 +107,58 @@ public class DeckController {
 		return "redirect:/melds";
 	}
 
+	/*
+	 * Setting up the deck
+	 **********************************************************************************/
+
 	@GetMapping("/deal")
 	@Transactional
 	public String dealCards() {
 		List<Card> cards = cardRepository.findAll();
 
-		for (Card card : cards.subList(0, 10)) {
-			card.setCardHolder(cardHolderRepository.findByName("player"));
+		for (Card card : cards) {
+			card.setCardHolder(cardHolderRepository.findByName("stockPile"));
+		}
+		this.discardPile.clear();
+		Set<Integer> dealingSet = new HashSet<>();
+		Random rand = new Random();
+
+		while (dealingSet.size() < 21) {
+			int n = rand.nextInt(52);
+			dealingSet.add(n);
 		}
 
-		for (Card card : cards.subList(10, 20)) {
-			card.setCardHolder(cardHolderRepository.findByName("bot"));
+		List<Integer> dealt = new ArrayList<>(dealingSet);
+
+		for (int i : dealt.subList(0, 10)) {
+			cards.get(i).setCardHolder(cardHolderRepository.findByName("player"));
 		}
 
-		cards.get(20).setCardHolder(cardHolderRepository.findByName("discardPile"));
-		discardPile.add(cards.get(20));
+		for (int i : dealt.subList(10, 20)) {
+			cards.get(i).setCardHolder(cardHolderRepository.findByName("bot"));
+		}
+
+		Card top = cards.get(dealt.get(20));
+		top.setCardHolder(cardHolderRepository.findByName("discardPile"));
+		this.discardPile.add(top);
 
 		return "redirect:/main";
 	}
 
-	@GetMapping("/reset")
-	@Transactional
-	public String reset() {
-		cardRepository.deleteAll(); // TODO doesn't delete cards(?)
-		return "redirect:/cards";
-	}
-
 	@GetMapping("/cards")
-	@Transactional
 	public String createCards() {
 		List<Card> cards = new ArrayList<>();
 
-		for (String color : this.colors) {
-			for (int i = 1; i < 14; i++) {
+		for (int i = 1; i < 14; i++) {
+			for (String color : this.colors) {
 				Card card = new Card();
 				card.setValue(i);
 				card.setColor(color);
 				card.setInMeld(false);
-				card.setCardHolder(cardHolderRepository.findByName("stockPile"));
 				cards.add(card);
 			}
 		}
 
-		Collections.shuffle(cards);
 		cardRepository.save(cards);
 
 		return "redirect:/deal";
@@ -171,6 +185,10 @@ public class DeckController {
 		return "redirect:/cards";
 	}
 
+	/*
+	 * Models Attributes
+	 **********************************************************************************/
+
 	@ModelAttribute("hand")
 	public List<Card> getPlayerCards() {
 		if (this.discardPile.size() == 0) {
@@ -187,15 +205,52 @@ public class DeckController {
 		return this.discardPile.get(this.discardPile.size() - 1);
 	}
 
+	/*
+	 * Private methods
+	 **********************************************************************************/
+
+	@Transactional
 	private void findMelds(String cardHolderName) {
-		Runs runs = new Runs();
-		for (String color : this.colors) {
-			System.out.println(color);
-			runs.find(cardRepository.findByNameAndColorWithSort(cardHolderName, color, new Sort("value")));
-		}
-		Sets sets = new Sets();
-		for (int i = 1; i < 14; i++) {
-			sets.find(cardRepository.findByValueToSet(cardHolderName, i));
+		int deadwoodPoints;
+		CardHolder cardHolder = cardHolderRepository.findByName(cardHolderName);
+
+		this.findSetsFirst(cardHolderName);
+		deadwoodPoints = cardHolder.countDeadwoodPoints();
+		this.findRunsFirst(cardHolderName);
+
+		if (deadwoodPoints >= cardHolder.countDeadwoodPoints()) {
+			return;
+		} else {
+			this.findSetsFirst(cardHolderName);
 		}
 	}
+
+	private void findRunsFirst(String cardHolderName) {
+		Melds melds = new Runs();
+		melds.reset(cardRepository.findByCardHolderName(cardHolderName));
+		this.findRuns(cardHolderName);
+		this.findSets(cardHolderName);
+	}
+
+	private void findSetsFirst(String cardHolderName) {
+		Melds melds = new Sets();
+		melds.reset(cardRepository.findByCardHolderName(cardHolderName));
+		this.findSets(cardHolderName);
+		this.findRuns(cardHolderName);
+	}
+
+	private void findRuns(String cardHolderName) {
+		Melds melds = new Runs();
+		for (String color : this.colors) {
+			melds.find(cardRepository.findByColorToRun(cardHolderName, color, new Sort("value")));
+		}
+	}
+
+	private void findSets(String cardHolderName) {
+		Melds melds = new Sets();
+		for (int i = 1; i < 14; i++) {
+			melds.find(cardRepository.findByValueToSet(cardHolderName, i));
+		}
+	}
+
 }
