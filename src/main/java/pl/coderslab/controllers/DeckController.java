@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import pl.coderslab.entity.Card;
 import pl.coderslab.entity.CardHolder;
-import pl.coderslab.melds.Melds;
-import pl.coderslab.melds.Runs;
-import pl.coderslab.melds.Sets;
+import pl.coderslab.model.MeldsFinder;
+import pl.coderslab.model.RunsFinder;
+import pl.coderslab.model.SetsFinder;
 import pl.coderslab.repository.CardHolderRepository;
 import pl.coderslab.repository.CardRepository;
 
@@ -226,31 +226,33 @@ public class DeckController {
 	}
 
 	private void findRunsFirst(String cardHolderName) {
-		Melds melds = new Runs();
-		melds.reset(cardRepository.findByCardHolderName(cardHolderName));
-		this.findRuns(cardHolderName);
-		this.findSets(cardHolderName);
+		MeldsFinder melds = makeRunsFinder(cardHolderName);
+		melds.reset();
+		melds.findAll();
+		makeSetsFinder(cardHolderName).findAll();
 	}
 
 	private void findSetsFirst(String cardHolderName) {
-		Melds melds = new Sets();
-		melds.reset(cardRepository.findByCardHolderName(cardHolderName));
-		this.findSets(cardHolderName);
-		this.findRuns(cardHolderName);
+		MeldsFinder melds = makeSetsFinder(cardHolderName);
+		melds.reset();
+		melds.findAll();
+		makeRunsFinder(cardHolderName).findAll();
 	}
 
-	private void findRuns(String cardHolderName) {
-		Melds melds = new Runs();
+	private MeldsFinder makeRunsFinder(String cardHolderName) {
+		List<List<Card>> hand = new ArrayList<>();
 		for (String color : this.colors) {
-			melds.find(cardRepository.findByColorToRun(cardHolderName, color, new Sort("value")));
+			hand.add(cardRepository.findByColorToRun(cardHolderName, color, new Sort("value")));
 		}
+		return new RunsFinder(hand);
 	}
 
-	private void findSets(String cardHolderName) {
-		Melds melds = new Sets();
+	private MeldsFinder makeSetsFinder(String cardHolderName) {
+		List<List<Card>> hand = new ArrayList<>();
 		for (int i = 1; i < 14; i++) {
-			melds.find(cardRepository.findByValueToSet(cardHolderName, i));
+			hand.add(cardRepository.findByValueToSet(cardHolderName, i));
 		}
+		return new SetsFinder(hand);
 	}
 
 }
